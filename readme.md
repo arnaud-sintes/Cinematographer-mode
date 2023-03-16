@@ -117,6 +117,8 @@ In both ***PLAY*** and ***EDIT*** *focus sequence modes*, we can use the camera 
 >
 > In both cases, *Magic Lantern* will lose its internal relative focus step reference and focus sequencing will be fucked up.
 
+👉 Note the [***ZOOM***] button will be our best friend here, allowing us to temporarily get a magnified vision of the scene that is precise enough to visually ensure our focus is perfectly positioned.
+
 ### 4.2. Edit mode
 
 Each time we're switching to ***EDIT*** *focus sequence mode*, the focus sequence itself is **reset** and the camera display overlay will look like this:
@@ -167,6 +169,8 @@ Under the form:
 
 👆 To run the **focus transition** between the current point in the list to the next one, we just need to press the [***SET***] button.
 
+When reaching the latest position in the sequence list, it loops naturally to its very beginning, allowing us to retrieve our initial focus position (and repeating the sequence again).
+
 During the transition, the camera display the following overlay:
 
 ```
@@ -193,6 +197,8 @@ Under the form:
 ## 5. What's remaining ?
 
 👷 It will be great to be able to **save on disk** the *focus sequence content* and the *current focus index* to reload it when switching off the camera (but it seems we can just save single integers for now, which make this quite complicated to achieve unless I find a way to save & load raw files by myself).
+
+> note to self: rely over regular file read/write C functions to do so!
 
 ## 6. License and credits
 
