@@ -10,6 +10,10 @@
 // focus sequence speed entry count:
 #define CINEMATO_FOCUS_SEQUENCE_SPEED_COUNT 5
 
+// settings file name:
+#define CINEMATO_SETTINGS_FILE "ML/SETTINGS/cinemato.cfg"
+
+
 // focus sequence speed structure definition:
 typedef struct
 {
@@ -108,6 +112,41 @@ static Cinemato_Data g_cinemato_data = {
 };
 
 
+// read configuration file (if any):
+static void Cinemato_ReadConfig()
+{
+    // notation shortcuts:
+    Cinemato_Data * const pData = &g_cinemato_data;
+    Cinemato_FocusSequence * const pFocusSequence = &pData->focusSequence;
+    
+    // open settings file for read:
+    FILE * pFile = FIO_OpenFile( CINEMATO_SETTINGS_FILE, O_RDONLY );
+    if( pFile == 0 )
+        return;
+    FIO_ReadFile( pFile, &pFocusSequence->index, sizeof( int ) );
+    FIO_ReadFile( pFile, &pFocusSequence->length, sizeof( int ) );
+    FIO_ReadFile( pFile, pFocusSequence->data, pFocusSequence->length * 3 * sizeof( int ) );
+    FIO_CloseFile( pFile );
+}
+
+
+// write configuration file:
+static void Cinemato_WriteConfig()
+{
+    // notation shortcuts:
+    const Cinemato_Data * const pData = &g_cinemato_data;
+    const Cinemato_FocusSequence * const pFocusSequence = &pData->focusSequence;
+    
+    // open settings file for write:
+    FIO_RemoveFile( CINEMATO_SETTINGS_FILE );
+    FILE * pFile = FIO_CreateFile( CINEMATO_SETTINGS_FILE );
+    FIO_WriteFile( pFile, &pFocusSequence->index, sizeof( int ) );
+    FIO_WriteFile( pFile, &pFocusSequence->length, sizeof( int ) );
+    FIO_WriteFile( pFile, pFocusSequence->data, pFocusSequence->length * 3 * sizeof( int ) );
+    FIO_CloseFile( pFile );
+}
+
+
 // specific print function:
 static void Cinemato_Print( const char * _fmt, ... )
 {    
@@ -180,9 +219,9 @@ static void Cinemato_OverlayTask_Print()
     int sourceIndex = pFocusSequence->index - 1;
     if( sourceIndex == 0 )
         sourceIndex = pFocusSequence->length;
-    const Cinemato_FocusSequencePoint * const pSourcePoint = &pFocusSequence->data[ sourceIndex - 1 ];
-    const char * const sourceSpeed = pFocusSequenceSpeed->labels[ pSourcePoint->speedIndex ];
-    Cinemato_Print( "[play] %d>%d %dmm (%s)", sourceIndex, pFocusSequence->index, lensDistance, sourceSpeed );
+    const Cinemato_FocusSequencePoint * const pTargetPoint = &pFocusSequence->data[ pFocusSequence->index - 1 ];
+    const char * const targetSpeed = pFocusSequenceSpeed->labels[ pTargetPoint->speedIndex ];
+    Cinemato_Print( "[play] %d>%d %dmm (%s)", sourceIndex, pFocusSequence->index, lensDistance, targetSpeed );
 }
 
 
@@ -191,6 +230,9 @@ static void Cinemato_OverlayTask()
 {
     // notation shortcuts:
     Cinemato_Data * const pData = &g_cinemato_data;
+    
+    // read config file is any:
+    Cinemato_ReadConfig();
     
     // task is now running:
     pData->isTaskRunning = true;
@@ -289,6 +331,9 @@ static unsigned int Cinemato_KeyHandler( const unsigned int _key )
             // PLAY mode activated, we set the current sequence index at the end of the list:
             if( pData->isModePlay ) {
                 pFocusSequence->index = pFocusSequence->length;
+                
+                // write config file (index updated):
+                Cinemato_WriteConfig();
                 return 0;
             }
             
@@ -304,6 +349,9 @@ static unsigned int Cinemato_KeyHandler( const unsigned int _key )
                 pPoint->steps = pData->focusSteps;
                 pPoint->speedIndex = pFocusSequenceSpeed->index;
                 pPoint->distance = lens_info.focus_dist * 10;
+                
+                // write config file (sequence updated):
+                Cinemato_WriteConfig();
                 return 0;
             }
             
@@ -314,6 +362,9 @@ static unsigned int Cinemato_KeyHandler( const unsigned int _key )
             // we reach the end of the list, jump to the first point:
             if( ++pFocusSequence->index > pFocusSequence->length )
                 pFocusSequence->index = 1;
+            
+            // write config file (index updated):
+            Cinemato_WriteConfig();
             
             // do lens focus transition from the current absolute position to the one we're targeting:
             const Cinemato_FocusSequencePoint * const pPoint = &pFocusSequence->data[ pFocusSequence->index - 1 ];
@@ -352,7 +403,7 @@ static unsigned int Cinemato_KeyHandler( const unsigned int _key )
 
 // init:
 static unsigned int Cinemato_Init()
-{
+{    
     // add cinematographer mode to Movie menu:
     menu_add( "Movie", g_cinemato_menu, COUNT( g_cinemato_menu ) );
     return 0;

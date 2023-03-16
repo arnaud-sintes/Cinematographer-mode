@@ -81,6 +81,8 @@ To install the module:
 
 We may have a new "***cinematographer***" option in the *Magic Lantern*'s **Movie** menu.
 
+![](readme.assets/menu.jpg)
+
 ## 4. How to use ?
 
 To use the *Cinematographer mode*, we just need to **start it** by selecting the "*cinematographer*" option in the *Magic Lantern*'s **Movie** menu.
@@ -100,6 +102,8 @@ Which is indicating the *Cinematographer mode* is waiting to be enabled.
 When enabled we may see a new overlay content, depending of the current **focus sequence mode** (***PLAY*** by default).
 
 👆 We can toggle between ***PLAY*** and ***EDIT*** modes by pressing the [***Q***] button.
+
+![](readme.assets/overlay.jpg)
 
 ### 4.1. Lens focus change
 
@@ -194,11 +198,27 @@ Under the form:
 
 👆 One additional feature we may want to use is the [***PLAY***] button that allows to quickly toggle the **camera display on** and **off**, disabling it being a huge **battery saver**, particularly when dealing with video in **crop modes** (the *framed* display really drains the battery).
 
-## 5. What's remaining ?
+### 4.5. Save and reload
 
-👷 It will be great to be able to **save on disk** the *focus sequence content* and the *current focus index* to reload it when switching off the camera (but it seems we can just save single integers for now, which make this quite complicated to achieve unless I find a way to save & load raw files by myself).
+Anytime we're *adding focus points to the sequence* or we're *changing the focus index value*, both data are **saved to disk** in a dedicated **settings file** (*/ML/SETTINGS/cinemato.cfg*).
 
-> note to self: rely over regular file read/write C functions to do so!
+When starting the *Cinematographer mode*, the settings file is **reloaded**, so you can continue to work in the exact same conditions as before the camera was shut downed.
+
+## 5. Summary
+
+![](readme.assets/summary.jpg)
+
+👆 (A) [***INFO***] **enable/disable** the *Cinematographer mode*
+
+👆 (B) [***Q***] toggle between ***PLAY*** and ***EDIT*** focus sequence modes
+
+👆 (C) [***JOYSTICK***] increase or decrease *lens focus point*
+
+👆 (D) [***SET***] **queue** the current *lens position* and *selected transition speed* in the focus sequence in ***EDIT* mode**, run the **focus transition** between the current point in the list to the next one in ***PLAY* mode**
+
+👆 (E) [***RATE***] cycle around **transition speed** presets
+
+👆 (F) [***PLAY***] toggle the **camera display on** and **off**
 
 ## 6. License and credits
 
