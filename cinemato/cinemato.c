@@ -76,6 +76,9 @@ typedef struct
     // are we in PLAY mode ? (or in EDIT mode then)
     bool isModePlay; 
     
+    // is focus change via joystick currently active ?
+    bool isFocusActive;
+    
     // are we currently doing a focus transition?
     bool isInTransition;
     
@@ -96,14 +99,15 @@ static Cinemato_Data g_cinemato_data = {
     .isTaskRunning  = false,
     .isEnabled      = false,
     .isModePlay     = true,
+    .isFocusActive	= true,
     .isInTransition = false,
     .isDisplayOn    = true,
     .focusSteps     = 0,
     .focusSequence  = {
-        .length         = 0,
+        .length			= 0,
         .index          = 0,
         .speed          = {
-            .count          = CINEMATO_FOCUS_SEQUENCE_SPEED_COUNT,
+            .count      	= CINEMATO_FOCUS_SEQUENCE_SPEED_COUNT,
             .index          = 0,
             .labels         = { "fastest", "fast", "medium", "slow", "slowest" },
             .data           = { 0, 10, 50, 100, 200 }
@@ -152,7 +156,9 @@ static void Cinemato_Print( const char * _fmt, ... )
 {    
     // unfold arguments regarding format:
     va_list args;
-    static char data[ 42 ]; // max line length
+    // worst length is 57 characters long:
+    // [play] 99/99 655350mm > 655350mm (medium) {focus}
+    static char data[ 58 ];
     va_start( args, _fmt );
     int dataLen = sizeof( data );
     int written = vsnprintf( data, dataLen - 1, _fmt, args );
@@ -165,7 +171,7 @@ static void Cinemato_Print( const char * _fmt, ... )
     // draw label with data, white font over black background:
     static uint32_t fontspec = FONT( FONT_SMALL, COLOR_WHITE, COLOR_BLACK );
     int x = 0; // stick on the left
-    int y = 100; // 100px from top
+    int y = 40; // 40px from top
     bmp_puts( fontspec, &x, &y, data );
 }
 
@@ -173,6 +179,10 @@ static void Cinemato_Print( const char * _fmt, ... )
 // overlay task conditional print:
 static void Cinemato_OverlayTask_Print()
 {
+    // do not print overlays if we're in the ML menus:
+    if( gui_menu_shown() )
+        return;
+    
     // notation shortcuts:
     const Cinemato_Data * const pData = &g_cinemato_data;
     const Cinemato_FocusSequence * const pFocusSequence = &pData->focusSequence;
@@ -185,13 +195,16 @@ static void Cinemato_OverlayTask_Print()
         return;
     }
     
+    // if focus change via joystick is active, we're adding a screen indication:
+    const char * const focusViaJoystick = pData->isFocusActive ? " {focus}" : "";
+    
     // we're in EDIT mode, display the current recorded point count (1),
     // alongside current lens distance (2) and speed (3) to be queued, under the form:
     // [edit] (1) < (2)mm (3)
     if( !pData->isModePlay ) {
         const int lensDistance = lens_info.focus_dist * 10;
         const char * const currentSpeed = pFocusSequenceSpeed->labels[ pFocusSequenceSpeed->index ];
-        Cinemato_Print( "[edit] %d < %dmm (%s)", pFocusSequence->length, lensDistance, currentSpeed );
+        Cinemato_Print( "[edit] %d < %dmm (%s)%s", pFocusSequence->length, lensDistance, currentSpeed, focusViaJoystick );
         return;
     }
     
@@ -208,7 +221,7 @@ static void Cinemato_OverlayTask_Print()
             targetIndex = 1;
         const Cinemato_FocusSequencePoint * const pTargetPoint = &pFocusSequence->data[ targetIndex - 1 ];
         const char * const targetSpeed = pFocusSequenceSpeed->labels[ pTargetPoint->speedIndex ];
-        Cinemato_Print( "[play] %d/%d %dmm > %dmm (%s)", pFocusSequence->index, pFocusSequence->length, lensDistance, pTargetPoint->distance, targetSpeed );
+        Cinemato_Print( "[play] %d/%d %dmm > %dmm (%s)%s", pFocusSequence->index, pFocusSequence->length, lensDistance, pTargetPoint->distance, targetSpeed, focusViaJoystick );
         return;
     }
     
@@ -279,6 +292,10 @@ static struct menu_entry g_cinemato_menu[] = { {
 // key handler:
 static unsigned int Cinemato_KeyHandler( const unsigned int _key )
 {
+    // we're in the ML menus, bypass key handler:
+    if( gui_menu_shown() )
+        return 1;
+    
     // notation shortcuts:
     Cinemato_Data * const pData = &g_cinemato_data;
     Cinemato_FocusSequence * const pFocusSequence = &pData->focusSequence;
@@ -304,23 +321,36 @@ static unsigned int Cinemato_KeyHandler( const unsigned int _key )
     // custom keys:
     switch( _key ) {
         
+        // [CENTER] push button allows to (de)activate focus change via joystick
+        case MODULE_KEY_JOY_CENTER:
+            pData->isFocusActive = !pData->isFocusActive;
+            return 0;
+        
         // [UP] push button allows to precisely decrease the lens focus:
         case MODULE_KEY_PRESS_UP:
+            if( !pData->isFocusActive )
+                return 1;
             Cinemato_UpdateFocus( -1, 0 );
             return 0;
             
         // [RIGHT] push button allows to quickly decrease the lens focus:
         case MODULE_KEY_PRESS_RIGHT:
+            if( !pData->isFocusActive )
+                return 1;
             Cinemato_UpdateFocus( -manualQuickFocusChange, 0 );
             return 0;
             
         // [DOWN] push button allows to precisely increase the lens focus:
         case MODULE_KEY_PRESS_DOWN:
+            if( !pData->isFocusActive )
+                return 1;
             Cinemato_UpdateFocus( 1, 0 );
             return 0;
             
         // [LEFT] push button allows to quickly increase the lens focus:
         case MODULE_KEY_PRESS_LEFT:
+            if( !pData->isFocusActive )
+                return 1;
             Cinemato_UpdateFocus( manualQuickFocusChange, 0 );
             return 0;
             

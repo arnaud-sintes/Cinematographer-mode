@@ -87,7 +87,7 @@ We may have a new "***cinematographer***" option in the *Magic Lantern*'s **Movi
 
 To use the *Cinematographer mode*, we just need to **start it** by selecting the "*cinematographer*" option in the *Magic Lantern*'s **Movie** menu.
 
-Then, we may see the following display's **overlay** on the very left side of the screen (*100pixels from the top*):
+Then, we may see the following display's **overlay** on the very left side of the screen (*40pixels from the top*):
 
 ```
 [idle]
@@ -97,7 +97,9 @@ Which is indicating the *Cinematographer mode* is waiting to be enabled.
 
 👆 In order to **enable** (or subsequently **disable**) the *Cinematographer mode*, we just need to press the [***INFO***] button.
 
-> ⚠ Enabling the *Cinematographer mode* will hook a lot of camera keys (like the *joystick*) so we need to think about disabling it **before** going through *Magic Lantern* menus to avoid some inconvenient situations...
+> ⚠ Enabling the *Cinematographer mode* will hook a lot of camera keys (like the *joystick*) so we need to think about disabling it manually in some situations (like recovering other *Magic Lantern* functionalities).
+>
+> 👉 Note the *Cinematographer mode* is automatically disabled (both *overlays* and *camera key hooks*) when we're entering the *Magic Lantern*'s menus.
 
 When enabled we may see a new overlay content, depending of the current **focus sequence mode** (***PLAY*** by default).
 
@@ -121,14 +123,22 @@ In both ***PLAY*** and ***EDIT*** *focus sequence modes*, we can use the camera 
 >
 > In both cases, *Magic Lantern* will lose its internal relative focus step reference and focus sequencing will be fucked up.
 
-👉 Note the [***ZOOM***] button will be our best friend here, allowing us to temporarily get a magnified vision of the scene that is precise enough to visually ensure our focus is perfectly positioned.
+For convenience, we can use the 👆 [***JOYSTICK_CENTER***] button to (de)active the *focus change by joystick*, typically in order to recover native *Magic Lantern*'s functions attached to the joystick.
+
+When activated, we can see a "**{focus}**" indication displayed on the screen overlay, e.g.:
+
+```
+[edit] 0 < 450mm (fastest) {focus}
+```
+
+👉 Note also the [***ZOOM***] button will be our best friend here, allowing us to temporarily get a magnified vision of the scene that is precise enough to visually ensure our focus is perfectly positioned.
 
 ### 4.2. Edit mode
 
 Each time we're switching to ***EDIT*** *focus sequence mode*, the focus sequence itself is **reset** and the camera display overlay will look like this:
 
 ```
-[edit] 0 < 450mm (fastest)
+[edit] 0 < 450mm (fastest) {focus}
 ```
 
 Indicating:
@@ -136,11 +146,12 @@ Indicating:
 - The current **recorded point count** *{1}*
 - The current **lens distance** (mm) *to be queued* *{2}*
 - The current **transition speed** *to be queued* *{3}*
+- If **focus by joystick** is currently active *{4}*
 
 Under the form:
 
 ```
-[edit] {1} < {2}mm ({3})
+[edit] {1} < {2}mm ({3}) {{4}}
 ```
 
 The **lens distance** indication is dynamically updated regarding our **lens focus change** operations, providing an information about the point that will be **queued next in the list**, alongside the **lens focus transition speed** that will be used to go from the previous focus point in the list to this new one.
@@ -154,7 +165,7 @@ The **lens distance** indication is dynamically updated regarding our **lens foc
 Each time we're switching to ***PLAY*** *focus sequence mode*, the camera display overlay will look like this:
 
 ```
-[play] 3/3 200mm > 450mm (fastest)
+[play] 3/3 200mm > 450mm (fastest) {focus}
 ```
 
 Indicating:
@@ -164,11 +175,12 @@ Indicating:
 - The current **lens distance** (mm) *{3}*
 - The **lens distance** (mm) of the **next focus point** in the sequence *{4}*
 - The **transition speed** that will be used to do the transition from current focus point to the next one *{5}*
+- If **focus by joystick** is currently active *{6}*
 
 Under the form:
 
 ```
-[play] {1}/{2} {3}mm > {4}mm ({5})
+[play] {1}/{2} {3}mm > {4}mm ({5}) {{6}}
 ```
 
 👆 To run the **focus transition** between the current point in the list to the next one, we just need to press the [***SET***] button.
@@ -212,7 +224,7 @@ When starting the *Cinematographer mode*, the settings file is **reloaded**, so 
 
 👆 (B) [***Q***] toggle between ***PLAY*** and ***EDIT*** focus sequence modes
 
-👆 (C) [***JOYSTICK***] increase or decrease *lens focus point*
+👆 (C) [***JOYSTICK***] increase or decrease *lens focus point*, use [***JOYSTICK_CENTER***] to (de)activate focus change by joystick
 
 👆 (D) [***SET***] **queue** the current *lens position* and *selected transition speed* in the focus sequence in ***EDIT* mode**, run the **focus transition** between the current point in the list to the next one in ***PLAY* mode**
 
