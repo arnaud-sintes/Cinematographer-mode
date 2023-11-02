@@ -1,3 +1,5 @@
+> ⚠️ This module is now **dicontinued**, please refer to [this thread](https://www.magiclantern.fm/forum/index.php?topic=27053) ⚠️
+
 # Cinematographer mode
 
 ## 1. Purpose
